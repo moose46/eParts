@@ -1,0 +1,14 @@
+/.venv
+eParts/backend/__pycache__/__init__.cpython-311.pyc
+eParts/backend/__pycache__/urls.cpython-311.pyc
+eParts/backend/__pycache__/views.cpython-311.pyc
+*.pyc
+db.eParts
+launch*
+.idea/eParts.iml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+eParts/manage.py
