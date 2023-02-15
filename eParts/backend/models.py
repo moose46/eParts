@@ -4,14 +4,32 @@ from django.contrib.auth.models import User
 # Create your models here.
 
 
-class Vendor(models.Model):
-    company_name = models.CharField(max_length=100, null=False, blank=False)
-    web_site = models.CharField(max_length=128, name="Web Site", null=True, blank=True)
-    phone = models.CharField(max_length=32, null=True, name="Phone Number", blank=True)
-    createdAt = models.DateTimeField(auto_now=True)
+class base(models.Model):
+    createdAt = models.DateTimeField("date created", auto_now=True, null=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
+    updatedAt = models.DateTimeField("date last updated", auto_now_add=True, null=False)
+    description = models.CharField(
+        "description", max_length=128, blank=True, null=False, default="N/A"
+    )
 
-    updatedAt = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    class Meta:
+        abstract = True
+
+
+class Vendor(base):
+    company_name = models.CharField(
+        "company name", max_length=100, null=False, blank=False
+    )
+    email = models.CharField(
+        max_length=32, blank=False, null=False, default="none@none.com"
+    )
+    web_site = models.CharField(max_length=128, null=False, blank=False, default="")
+    phone = models.CharField(max_length=32, null=True, name="Phone Number", blank=True)
+    street = models.CharField(max_length=64, null=True, blank=True)
+    city = models.CharField(max_length=64, null=True, blank=True)
+    state = models.CharField(max_length=64, null=True, blank=True)
+    country = models.CharField(max_length=64, null=True, blank=True)
+    zip = models.CharField(max_length=64, null=True, blank=True)
 
     class Meta:
         ordering = ["company_name"]
@@ -25,7 +43,7 @@ class Tolerance(models.TextChoices):
     GreaterThanTwentyPercent = "> 20%"
 
 
-class Composition(models.TextChoices):
+class ResistorType(models.TextChoices):
     MetalFilm = "Metal Film"
     Carbon = "Carbon"
     WireWound = "Wire Wound"
@@ -33,15 +51,19 @@ class Composition(models.TextChoices):
     Power = "Power Resistor"
 
 
+class CapacitorType(models.TextChoices):
+    Electrolytic = "Electrolytic"
+    Polymer = "Polymer"
+    Mica = "Mica"
+    OrangeDrop = "Orange Drop"
+
+
 class part(models.Model):
-    createdAt = models.DateTimeField(auto_now=True)
-    in_stock = models.IntegerField(
-        name="# In Stock", null=False, default=0, blank=False
-    )
-    updatedAt = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     part_number = models.CharField(
         name="Part or Stock#", blank=True, null=True, max_length=32
+    )
+    in_stock = models.IntegerField(
+        name="# In Stock", null=False, default=0, blank=False
     )
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
 
@@ -50,18 +72,46 @@ class part(models.Model):
         ordering = ["vendor"]
 
 
-class Resistor(part):
+class Resistor(part, base):
     tolerance = models.CharField(
-        max_length=32, choices=Tolerance.choices, default=Tolerance.FivePercent
+        "resistor tolerance",
+        max_length=32,
+        choices=Tolerance.choices,
+        default=Tolerance.FivePercent,
     )
-    value = models.IntegerField(null=False, blank=False, name="Ohms")
+    ohms = models.IntegerField(null=False, blank=False, name="Ohms")
+    resistor_type = models.CharField(
+        "composition",
+        max_length=32,
+        choices=ResistorType.choices,
+        default=ResistorType.Carbon,
+    )
+    wattage = models.FloatField(name="Watts", blank=False, null=False)
+
+
+class FormFactors(models.TextChoices):
+    Axial = "Axial"
+    Radial = "Radial"
+    Can = "Can"
+
+
+class Capacitor(part, base):
+    mfd = models.FloatField(null=False, blank=False, default=0, name="Mfd")
     composition = models.CharField(
-        max_length=32, choices=Composition.choices, default=Composition.Carbon
+        max_length=32,
+        name="Composition",
+        choices=CapacitorType.choices,
+        null=False,
+        blank=False,
+        default=CapacitorType.Polymer,
     )
-    wattage = models.IntegerField(name="Watts", blank=False, null=False)
-
-
-class Capacitor(part):
-    value = models.IntegerField(null=False, blank=False, default=0, name="Mfd")
+    voltage = models.IntegerField(name="Voltage Rating", blank=False, null=False)
+    axial_radial = models.CharField(
+        "capacitor form factor",
+        max_length=32,
+        choices=FormFactors.choices,
+        null=False,
+        default=FormFactors.Axial,
+    )
     # class Meta:
     #     ordering = ["vendor"]
