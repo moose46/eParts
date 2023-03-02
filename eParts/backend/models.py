@@ -23,13 +23,16 @@ class Vendor(base):
     email = models.CharField(
         max_length=32, blank=False, null=False, default="none@none.com"
     )
-    web_site = models.CharField(max_length=128, null=False, blank=False, default="")
+    web_site = models.CharField(max_length=128, null=True, blank=True, default="")
     phone = models.CharField(max_length=32, null=True, name="Phone Number", blank=True)
     street = models.CharField(max_length=64, null=True, blank=True)
     city = models.CharField(max_length=64, null=True, blank=True)
     state = models.CharField(max_length=64, null=True, blank=True)
     country = models.CharField(max_length=64, null=True, blank=True)
     zip = models.CharField(max_length=64, null=True, blank=True)
+
+    def __str__(self):
+        return self.company_name
 
     class Meta:
         ordering = ["company_name"]
@@ -58,7 +61,17 @@ class CapacitorType(models.TextChoices):
     OrangeDrop = "Orange Drop"
 
 
-class part(models.Model):
+class PartType(base):
+    description = models.CharField(max_length=32, null=False)
+
+    def __str__(self):
+        return self.description
+
+    class Meta:
+        ordering = ["description"]
+
+
+class Part(base):
     part_number = models.CharField(
         name="Part or Stock#", blank=True, null=True, max_length=32
     )
@@ -66,13 +79,14 @@ class part(models.Model):
         name="# In Stock", null=False, default=0, blank=False
     )
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
+    part_id = models.ForeignKey(PartType, on_delete=models.CASCADE, name="Part Type")
 
     class Meta:
-        abstract = True
+        # abstract = True
         ordering = ["vendor"]
 
 
-class Resistor(part, base):
+class Resistor(Part, base):
     tolerance = models.CharField(
         "resistor tolerance",
         max_length=32,
@@ -95,7 +109,7 @@ class FormFactors(models.TextChoices):
     Can = "Can"
 
 
-class Capacitor(part, base):
+class Capacitor(Part, base):
     mfd = models.FloatField(null=False, blank=False, default=0, name="Mfd")
     composition = models.CharField(
         max_length=32,
