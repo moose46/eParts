@@ -71,15 +71,35 @@ class PartType(base):
         ordering = ["description"]
 
 
+class Storage(base):
+    # description = models.CharField(max_length=200, default="")
+    pass
+
+    def __str__(self) -> str:
+        return self.description
+
+
 class Part(base):
     part_number = models.CharField(
-        name="Part or Stock#", blank=True, null=True, max_length=32
+        blank=True, null=True, max_length=32, verbose_name="Part# or Stock#"
     )
     in_stock = models.IntegerField(
-        name="# In Stock", null=False, default=0, blank=False
+        verbose_name="# In Stock", null=False, default=0, blank=False
     )
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
-    part_id = models.ForeignKey(PartType, on_delete=models.CASCADE, name="Part Type")
+    part_type_id = models.ForeignKey(
+        PartType,
+        on_delete=models.CASCADE,
+        verbose_name="Part Type",
+    )
+    storage_location_id = models.ForeignKey(
+        Storage, on_delete=models.CASCADE, verbose_name="Storage Location"
+    )
+    value = models.CharField(max_length=32, null=True, default="", blank=True)
+
+    def __str__(self) -> str:
+        s = f"{self.part_type_id.description:32}: {self.part_number:>32} / {self.storage_location_id} / {self.vendor}"
+        return s
 
     class Meta:
         # abstract = True
